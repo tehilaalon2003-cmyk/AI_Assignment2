@@ -15,11 +15,11 @@ no	no
 no	no
 no	yes
 no	no
-no	yes
-no	yes
-no	no
-no	yes
+yes	yes
 no	yes
 no	no
 no	yes
-0.75	0.8333333333333334
+yes	yes
+no	no
+yes	yes
+0.875	0.8333333333333334
