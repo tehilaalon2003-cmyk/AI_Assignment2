@@ -56,20 +56,20 @@ def train_id3(X, y, features):
 
     # Recursive build function
     def build(X_sub, y_sub, feats_left, default_label):
-        #no examples-default
+        # no examples-default
         if len(y_sub) == 0:
             return {"leaf": True, "class": default_label}
 
-        #pure-leaf
+        # pure-leaf
         if all(lbl == y_sub[0] for lbl in y_sub):
             return {"leaf": True, "class": y_sub[0]}
 
-        #no features-majority
+        # no features-majority
         maj = _majority(y_sub)
         if len(feats_left) == 0:
             return {"leaf": True, "class": maj}
 
-        #choose best feature by IG
+        # choose best feature by IG
         best = None
         best_ig = float("-inf")
         for f in feats_left:
@@ -78,10 +78,15 @@ def train_id3(X, y, features):
                 best_ig = ig
                 best = f
 
-        node = {"leaf": False, "attr": best, "children": {}}
+        node = {
+            "leaf": False,
+            "attr": best,
+            "children": {},
+            "default": maj,  # default class 
+        }
         next_feats = [f for f in feats_left if f != best]
 
-        #split by each value
+        # split by each value
         for v in domains[best]:
             X_v = [row for row in X_sub if row[best] == v]
             y_v = [lbl for row, lbl in zip(X_sub, y_sub) if row[best] == v]
@@ -134,4 +139,4 @@ def predict_id3(tree, sample):
     if value in tree["children"]:
         return predict_id3(tree["children"][value], sample)
     
-    return None  # or some default class  
+    return tree["default"]  # unknown value, return default class  
