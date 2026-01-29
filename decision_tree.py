@@ -109,7 +109,7 @@ def export_tree_to_file(tree, path="output_tree.txt"):
                     lines.append(f"{attr} = {value}")
                     dfs(child, level + 1, False)
             else:
-                prefix = ("\t" * level) + "| "
+                prefix = ("\t" * level) + "|"
                 if child["leaf"]:
                     lines.append(f"{prefix}{attr} = {value}: {child['class']}")
                 else:
