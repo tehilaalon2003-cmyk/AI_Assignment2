@@ -2,7 +2,7 @@ import math
 from collections import Counter
 
 # Entropy calculation for the class labels
-#H(Y) = - sum_c P(c)log2(P(c))
+# H(Y) = - sum_c P(c)log2(P(c))
 def _entropy(labels):
     n = len(labels)
     if n == 0:
@@ -35,7 +35,7 @@ def _domains_in_train_order(X, features):
     return domains
 
 # Calculate Information Gain for a feature
-#IG(Y, feature) = H(Y) - sum_v P(v)*H(Y|v)
+# IG(Y, feature) = H(Y) - sum_v P(v)*H(Y|v)
 def _info_gain(X, y, feature, domain):
     # Calculate information gain of splitting on 'feature'
     base = _entropy(y)
@@ -50,26 +50,26 @@ def _info_gain(X, y, feature, domain):
     return base - cond
 
 
-#The training of the Decision Tree using ID3 algorithm
+# The training of the Decision Tree using ID3 algorithm
 def train_id3(X, y, features):
     domains = _domains_in_train_order(X, features)
 
     # Recursive build function
     def build(X_sub, y_sub, feats_left, default_label):
-        #no examples-default
+        # no examples-default
         if len(y_sub) == 0:
             return {"leaf": True, "class": default_label}
 
-        #pure-leaf
+        # pure-leaf
         if all(lbl == y_sub[0] for lbl in y_sub):
             return {"leaf": True, "class": y_sub[0]}
 
-        #no features-majority
+        # no features-majority
         maj = _majority(y_sub)
         if len(feats_left) == 0:
             return {"leaf": True, "class": maj}
 
-        #choose best feature by IG
+        # choose best feature by IG
         best = None
         best_ig = float("-inf")
         for f in feats_left:
@@ -78,10 +78,15 @@ def train_id3(X, y, features):
                 best_ig = ig
                 best = f
 
-        node = {"leaf": False, "attr": best, "children": {}}
+        node = {
+            "leaf": False,
+            "attr": best,
+            "children": {},
+            "default": maj,  # default class 
+        }
         next_feats = [f for f in feats_left if f != best]
 
-        #split by each value
+        # split by each value
         for v in domains[best]:
             X_v = [row for row in X_sub if row[best] == v]
             y_v = [lbl for row, lbl in zip(X_sub, y_sub) if row[best] == v]
@@ -92,7 +97,7 @@ def train_id3(X, y, features):
     overall_default = _majority(y)
     return build(X, y, features, overall_default)
 
-#print the decision tree to the file
+# print the decision tree to the file
 def export_tree_to_file(tree, path="output_tree.txt"):
     lines = []
 
@@ -120,3 +125,18 @@ def export_tree_to_file(tree, path="output_tree.txt"):
 
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + ("\n" if lines else ""))
+
+
+def predict_id3(tree, sample):
+    # if we reached a leaf – return the class
+    if tree["leaf"]:
+        return tree["class"]
+
+    attr = tree["attr"]
+    value = sample[attr]
+
+    # keep traversing the tree
+    if value in tree["children"]:
+        return predict_id3(tree["children"][value], sample)
+    
+    return tree["default"]  # unknown value, return default class  
